@@ -1,4 +1,4 @@
-# sublime-copy-as-github-light-html
+# Sublime-copy-as-github-light-html
 copy the code as github light based style with own design in the sublime text 4
 
 🌏 **Read this in other languages:**  
@@ -109,10 +109,11 @@ graph TD
 ```
 
 ### 步骤 4：使用方法
-选中代码后，按下 `Ctrl + Shift + C` 即可复制为自定义后的样式（与编辑器样式独立）。
+选中代码后，按下 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> 即可复制为自定义后的样式（与编辑器样式独立）。
 
 ---
 
-📚 
+### 📚 样式来源参考
 
-样式来源参考 [GitHub Theme for Sublime Text](https://github.com/mauroreisvieira/github-sublime-theme) 
+* [GitHub Theme for Sublime Text](https://github.com/mauroreisvieira/github-sublime-theme)
+
