@@ -15,58 +15,60 @@ class CopyCustomizedStyleCommand(sublime_plugin.TextCommand):
         # ===========================================
 
         window = self.view.window()
-        
-        # --- 1. 获取选中文本 (支持多光标) ---
+
+        # --- 1. 获取选中文本 ---
         selections = self.view.sel()
         text_to_copy = ""
         has_selection = False
         
-        for region in selections:
-            if not region.empty():
-                has_selection = True
-                text_to_copy += self.view.substr(region) + "\n"
+        # 优化：使用列表推导式拼接字符串比 += 更快且更省内存（对于超大文本）
+        fragments = [self.view.substr(r) for r in selections if not r.empty()]
+        if not fragments:
+             sublime.status_message("⚠️ Unselected Text")
+             return
         
-        # 去除末尾多余换行
-        text_to_copy = text_to_copy.rstrip()
+        text_to_copy = "\n".join(fragments) # 用 join 替代 +=
 
-        # 如果用户什么都没选，就不执行（避免误操作）
-        if not has_selection or not text_to_copy:
-            sublime.status_message("⚠️ Unselected Text")
-            return
-
-        # --- 2. 创建隐形面板 (Ghost Panel) ---
         panel_name = "ghost_copier_panel"
-        # 销毁可能残留的旧面板
-        window.destroy_output_panel(panel_name) 
-        panel = window.create_output_panel(panel_name)
-
-        # --- 3. 写入文本 ---
-        panel.run_command('append', {'characters': text_to_copy})
-
-        # --- 4. 同步语法高亮 ---
-        current_syntax = self.view.settings().get('syntax')
-        if current_syntax:
-            panel.assign_syntax(current_syntax)
-
-        # --- 5. 应用样式配置 ---
-        settings = panel.settings()
-        settings.set('color_scheme', EXPORT_THEME)
-        settings.set('font_face', EXPORT_FONT)
-        settings.set('font_size', EXPORT_SIZE)
         
-        # 关键：关闭所有可能干扰复制的 UI 元素
-        settings.set('line_numbers', False)
-        settings.set('gutter', False)
-        settings.set('word_wrap', False) # 防止窄屏自动换行影响代码格式
+        # 1. 先清理可能的残留（入口清理）
+        window.destroy_output_panel(panel_name) 
 
-        # --- 6. 核心：后台全选并复制 ---
-        # 必须选中面板内的内容，copy_as_html 才能工作
-        panel.sel().clear()
-        panel.sel().add(sublime.Region(0, panel.size()))
+        # 2. 开始创建和操作
+        try:
+            panel = window.create_output_panel(panel_name)
+            
+            # 写入文本
+            panel.run_command('append', {'characters': text_to_copy})
 
-        # 执行原生复制，enclosing_tags 保证字体样式被包裹
-        panel.run_command('copy_as_html', {'enclosing_tags': True})
+            # 同步语法
+            current_syntax = self.view.settings().get('syntax')
+            if current_syntax:
+                panel.assign_syntax(current_syntax)
 
-        # --- 7. 清理 ---
-        window.destroy_output_panel(panel_name)
-        sublime.status_message(f"✅ Copied with own style ({EXPORT_FONT})")
+            # 设置样式
+            settings = panel.settings()
+            settings.set('color_scheme', EXPORT_THEME)
+            settings.set('font_face', EXPORT_FONT)
+            settings.set('font_size', EXPORT_SIZE)
+            settings.set('line_numbers', False)
+            settings.set('gutter', False)
+            settings.set('word_wrap', False)
+
+            # 全选并复制
+            panel.sel().clear()
+            panel.sel().add(sublime.Region(0, panel.size()))
+            panel.run_command('copy_as_html', {'enclosing_tags': True})
+            
+            # theme_base, _ = os.path.splitext("GitHub_Light_AAS.sublime-color-scheme")
+            sublime.status_message(f"✅ Copied with own style ({EXPORT_THEME})")
+
+        except Exception as e:
+            # 万一出错了，打印日志
+            print(f"Ghost Copy Error: {e}")
+            sublime.status_message("❌ Copy Failed, Please check the console")
+            
+        finally:
+            # 3. 无论成功还是失败，只要面板被创建了，最后一定要销毁！
+            # 这就是“防泄漏”的终极防线
+            window.destroy_output_panel(panel_name)
