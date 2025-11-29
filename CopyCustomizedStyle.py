@@ -61,7 +61,7 @@ class CopyCustomizedStyleCommand(sublime_plugin.TextCommand):
             panel.run_command('copy_as_html', {'enclosing_tags': True})
             
             # theme_base, _ = os.path.splitext("GitHub_Light_AAS.sublime-color-scheme")
-            sublime.status_message(f"✅ Copied with own style ({EXPORT_THEME})")
+            sublime.status_message("✅ Copied with own style")
 
         except Exception as e:
             # 万一出错了，打印日志
@@ -72,3 +72,4 @@ class CopyCustomizedStyleCommand(sublime_plugin.TextCommand):
             # 3. 无论成功还是失败，只要面板被创建了，最后一定要销毁！
             # 这就是“防泄漏”的终极防线
             window.destroy_output_panel(panel_name)
+
