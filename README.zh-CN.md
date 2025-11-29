@@ -1,6 +1,9 @@
 # sublime-copy-as-github-light-html
 copy the code as github light based style with own design in the sublime text 4
 
+🌏 **Read this in other languages:**  
+[🇺🇸 English README](README.md)
+
 基于 Sublime Text 自带的 **Edit → Copy as HTML** 功能，  
 实现一个**独立于当前编辑器主题**的「GitHub 白色风格」HTML 复制工具。
 
